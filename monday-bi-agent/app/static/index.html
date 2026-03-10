@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monday BI Agent</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 {
+      margin-top: 0;
+    }
+    .card {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      border-radius: 10px;
+      border: 1px solid #475569;
+      background: #020617;
+      color: #e2e8f0;
+      padding: 12px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 12px;
+      font-size: 15px;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .answer {
+      white-space: pre-wrap;
+      line-height: 1.55;
+    }
+    .muted {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .sample {
+      cursor: pointer;
+      color: #93c5fd;
+      margin-right: 12px;
+      display: inline-block;
+      margin-top: 8px;
+    }
+    .loading {
+      color: #fbbf24;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Monday.com Business Intelligence Agent</h1>
+    <p class="muted">
+      Ask founder-level questions across Deals and Work Orders.
+    </p>
+
+    <div class="card">
+      <textarea id="question" placeholder="Example: How is our pipeline looking for energy sector this quarter?"></textarea>
+      <button onclick="ask()">Ask</button>
+
+      <div>
+        <span class="sample" onclick="fillSample('How is our pipeline looking for energy sector this quarter?')">Sample 1</span>
+        <span class="sample" onclick="fillSample('Which work orders are showing billing or collection risk?')">Sample 2</span>
+        <span class="sample" onclick="fillSample('Prepare a leadership update for mining this quarter.')">Sample 3</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Answer</h3>
+      <div id="answer" class="answer muted">No answer yet.</div>
+    </div>
+  </div>
+
+  <script>
+    function fillSample(text) {
+      document.getElementById("question").value = text;
+    }
+
+    async function ask() {
+      const question = document.getElementById("question").value.trim();
+      const answerDiv = document.getElementById("answer");
+
+      if (!question) {
+        answerDiv.textContent = "Please enter a question.";
+        return;
+      }
+
+      answerDiv.innerHTML = '<span class="loading">Thinking...</span>';
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question,
+            chat_history: []
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          answerDiv.textContent = data.detail || "Server error";
+          return;
+        }
+
+        answerDiv.textContent = data.answer;
+      } catch (err) {
+        answerDiv.textContent = "Request failed: " + err.message;
+      }
+    }
+  </script>
+<footer style="text-align:center; margin-top:30px; color:#94a3b8; font-size:14px;">
+Built by <b>Mahadev Manoj (2363040, 6BTAIML)</b> for the Skylark Drones Technical Assessment
+</footer>
+</body>
+</html>
